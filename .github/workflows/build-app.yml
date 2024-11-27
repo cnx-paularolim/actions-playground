@@ -1,0 +1,208 @@
+name: Build and deploy app (Android/iOS)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_platform:
+        description: 'Choose whether the action will be built for Android, iOS or both'
+        default: 'both'
+        type: choice
+        options:
+          - 'android'
+          - 'ios'
+          - 'both'
+      upload_to:
+        description: 'Choose whether the action will be uploaded to store (Play Store/TestFlight), GitHub or both'
+        default: 'store'
+        type: choice
+        options:
+          - 'store'
+          - 'github'
+          - 'store/github'
+          - 'code_push'
+      env:
+        description: 'Choose whether the build is for production or homol'
+        default: 'hml'
+        type: choice
+        options:
+          - 'prod'
+          - 'hml'
+      tag_version:
+        description: 'Enter your tag version'
+        required: false
+        default: ''
+      code_push_target:
+        description: 'Enter the version to update via code push'
+        required: false
+        default: ''
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-app:
+    name: Deploy app
+
+    runs-on: ${{ (inputs.upload_to == 'code_push' || inputs.build_platform == 'android') && 'ubuntu-latest' || 'macos-14' }}
+
+    environment:
+      name: ${{ inputs.env == 'prod' && 'production' || 'development' }}
+
+    steps:
+      - name: Checkout on branch ${{ github.ref_name }} with environment ${{ inputs.env }}
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com/
+          cache: 'yarn'
+      - run: npm install gulp-cli -g
+
+      - name: Configure envs
+        run: echo 'configuring env...'
+
+      - name: Install yarn dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Configure native files
+        run: echo 'configuring native files...'
+
+      - name: Change to prod
+        if: inputs.env == 'prod'
+        run: echo 'changing to prod...'
+
+      - name: Change native version
+        run: echo 'changing native files (${{ inputs.env == 'hml' && '--hml' || '' }})...'
+
+      - name: Set up our JDK environment
+        if: inputs.build_platform != 'ios' && inputs.upload_to != 'code_push'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+        
+      - name: Cache Gradle Wrapper
+        if: inputs.build_platform != 'ios' && inputs.upload_to != 'code_push'
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+
+      - name: Cache Gradle Dependencies
+        if: inputs.build_platform != 'ios' && inputs.upload_to != 'code_push'
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-caches-
+
+      - name: Make Gradlew Executable
+        if: inputs.build_platform != 'ios' && inputs.upload_to != 'code_push'
+        run: echo 'making gradle executable...'
+
+      - name: Generate apk
+        if: inputs.build_platform != 'ios' && (inputs.upload_to == 'github' || inputs.upload_to == 'store/github')
+        run: echo 'generating apk...'
+
+      - name: Generate aab
+        if: inputs.build_platform != 'ios' && (inputs.upload_to == 'store' || inputs.upload_to == 'store/github')
+        run: echo 'generating aab...'
+
+      - name: Upload App to Google Play
+        if: inputs.build_platform != 'ios' && (inputs.upload_to == 'store' || inputs.upload_to == 'store/github')
+        run: 'uploading to play store...'
+
+      - name: Upload Android artifact
+        if: inputs.build_platform != 'ios' && (inputs.upload_to == 'github' || inputs.upload_to == 'store/github')
+        run: 'uploading to github...'
+
+      - name: Check Xcode version
+        if: runner.os == 'macOS'
+        run: echo 'checking xcode...'
+
+      - name: Install the Apple certificate and provisioning profile
+        if: runner.os == 'macOS'
+        env:
+          DEVELOPMENT_CERTIFICATE_BASE64: ${{ secrets.P12_BASE64_DEVELOPMENT }}
+          DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.P12_BASE64_DISTRIBUTION }}
+          P12_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          DEVELOPMENT_PROVISION_PROFILE_BASE64: ${{ secrets.DEVELOPMENT_MOBILEPROVISION_BASE64 }}
+          DISTRIBUTION_PROVISION_PROFILE_BASE64: ${{ secrets.DISTRIBUTION_MOBILEPROVISION_BASE64 }}
+          ADHOC_PROVISION_PROFILE_BASE64: ${{ secrets.ADHOC_MOBILEPROVISION_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+        run: |
+          echo 'configuring certificates...'
+
+      - name: Setup ruby
+        if: inputs.build_platform != 'android' && inputs.upload_to != 'code_push'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7
+          bundler-cache: true
+
+    #   - name: Cache cocoapods
+    #     if: inputs.build_platform != 'android' && inputs.upload_to != 'code_push'
+    #     uses: actions/cache@v3
+    #     with:
+    #       path: |
+    #         ios/Pods
+    #         ~/Library/Caches/CocoaPods
+    #         ~/.cocoapods
+    #       key: ${{ runner.os }}-pods--${{ hashFiles('**/Podfile.lock') }}
+    #       restore-keys: ${{ runner.os }}-pods-
+
+      - name: Install pod dependencies
+        if: inputs.build_platform != 'android' && inputs.upload_to != 'code_push'
+        run: echo 'installing deps...'
+
+      - name: Create bundle
+        if: inputs.build_platform != 'android' && inputs.upload_to != 'code_push'
+        run: echo 'creating bundle...'
+
+      - name: Archieve iOS
+        if: inputs.build_platform != 'android' && inputs.upload_to != 'code_push'
+        run: |
+          echo 'archieving ios...'
+
+      - name: Generate ipa
+        if: inputs.build_platform != 'android' && inputs.upload_to != 'code_push'
+        run: |
+          echo 'generating ipa...'
+
+      - name: Upload to TestFlight
+        if: inputs.build_platform != 'android' && (inputs.upload_to == 'store' || inputs.upload_to == 'store/github')
+        run: |
+          echo 'uploading to test flight...'
+
+      - name: Upload iOS artifact
+        if: inputs.build_platform != 'android' && (inputs.upload_to == 'github' || inputs.upload_to == 'store/github')
+        run: echo 'uploading to github'
+
+      - name: Install AppCenter CLI
+        if: inputs.code_push_target != '' && inputs.upload_to == 'code_push'
+        run: echo 'installing appcenter...'
+
+      - name: Update CodePush - Android
+        if: inputs.code_push_target != '' && inputs.upload_to == 'code_push' && inputs.build_platform != 'ios'
+        run: echo 'updating android on codepush...'
+
+      - name: Update CodePush - iOS
+        if: inputs.code_push_target != '' && inputs.upload_to == 'code_push' && inputs.build_platform != 'android'
+        run: echo 'updating ios on codepush...'
+
+      - name: Clean up keychain and provisioning profile
+        if: always() && runner.os == 'macOS'
+        run: echo 'cleaning...'
+
+      - name: Create Release
+        if: inputs.tag_version != ''
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ inputs.tag_version }}
+          release_name: ${{ inputs.tag_version }}
+          draft: false
+          prerelease: false

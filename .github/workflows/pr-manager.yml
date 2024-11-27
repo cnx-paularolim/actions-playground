@@ -15,6 +15,9 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
+      - name: Checkout on branch ${{ github.ref_name }}
+        uses: actions/checkout@v4
+
       - name: Change file
         run: echo '-abc-' >> test.txt
 

@@ -48,10 +48,9 @@ jobs:
           pr_output=$(gh pr create \
           --title "version/${{ inputs.branch_name }}" \
           --body "This is an automated PR created by GitHub Actions." \
-          --base main --head version/${{ inputs.branch_name }} \
-          --json number)
+          --base main --head version/${{ inputs.branch_name }})
           echo "PR_OUTPUT=$pr_output" >> $GITHUB_ENV
-          pr_number=$(echo "$pr_output" | jq -r '.number')
+          pr_number=$(echo "$pr_output" | grep -oP '(?<=pull/)\d+')
           echo "PR_NUMBER=$pr_number" >> $GITHUB_ENV
 
       - name: Approve pull request

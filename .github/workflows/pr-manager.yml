@@ -56,15 +56,7 @@ jobs:
           echo "PR_NUMBER=$pr_number" >> $GITHUB_OUTPUT
 
       - name: Approve pull request
-        uses: actions/github-script@v7
+        uses: juliangruber/approve-pull-request-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const prNumber = ${{ steps.create_pr.outputs.PR_NUMBER }};
-            await github.pulls.createReview({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              event: "APPROVE",
-              body: "Automated approval by GitHub Actions."
-            });
+          number: ${{ steps.create_pr.outputs.PR_NUMBER }}

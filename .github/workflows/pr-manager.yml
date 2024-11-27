@@ -42,6 +42,7 @@ jobs:
           git push origin version/${{ inputs.branch_name }}
 
       - name: Create pull request
+        id: create_pr
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -49,12 +50,12 @@ jobs:
           --title "version/${{ inputs.branch_name }}" \
           --body "This is an automated PR created by GitHub Actions." \
           --base main --head version/${{ inputs.branch_name }})
-          echo "PR_OUTPUT=$pr_output" >> $GITHUB_ENV
+          echo 'PR_OUTPUT=pr_output' | tee $GITHUB_OUTPUT
           pr_number=$(echo "$pr_output" | grep -oP '(?<=pull/)\d+')
-          echo "PR_NUMBER=$pr_number" >> $GITHUB_ENV
+          echo 'PR_NUMBER=$pr_number' | tee $GITHUB_OUTPUT
 
       - name: Approve pull request
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo 'Pull Request Number: $PR_NUMBER'
+          echo 'Pull Request Number: ${{ steps.create_pr.outputs.PR_NUMBER }}'

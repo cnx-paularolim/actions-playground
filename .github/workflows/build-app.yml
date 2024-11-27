@@ -79,7 +79,18 @@ jobs:
 
       - name: Overwrite version
         if: inputs.overwrite_version != ''
-        run: gulp overwriteVersion --versionName ${{inputs.overwrite_version}}
+        run: gulp overwriteVersion --versionName ${{ inputs.overwrite_version }} ${{ inputs.env == 'hml' && '--hml' || '' }}
+
+      - name: Commit overwrite version
+        if: inputs.overwrite_version != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add ${{ inputs.env == 'hml' && './store/hml.json' || './store/prod.json' }}
+          git commit -m "chore: version ${{ inputs.overwrite_version }}"
+          git push
 
       - name: Change native version
         run: echo 'changing native files (${{ inputs.env == 'hml' && '--hml' || '' }})...'

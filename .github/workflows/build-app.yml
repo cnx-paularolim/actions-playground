@@ -79,7 +79,12 @@ jobs:
 
       - name: Overwrite version
         if: inputs.overwrite_version != ''
-        run: gulp overwriteVersion --versionName ${{ inputs.overwrite_version }} ${{ inputs.env == 'hml' && '--hml' || '' }}
+        run: |
+          gulp overwriteVersion \
+          --versionOverwrite ${{ inputs.overwrite_version }} \
+          ${{ inputs.env == 'hml' && '--hml' || '' }} \
+          ${{ (inputs.build_platform == 'android' || inputs.build_platform == 'both') && '--android' || '' }} \
+          ${{ (inputs.build_platform == 'ios' || inputs.build_platform == 'both') && '--ios' || '' }}
 
       - name: Commit overwrite version
         if: inputs.overwrite_version != ''

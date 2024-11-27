@@ -78,7 +78,7 @@ jobs:
         run: echo 'changing to prod...'
 
       - name: Overwrite version
-        if: inputs.overwrite_version != ''
+        if: inputs.overwrite_version != '' && inputs.upload_to != 'code_push'
         run: |
           gulp overwriteVersion \
           --versionOverwrite ${{ inputs.overwrite_version }} \
@@ -87,7 +87,7 @@ jobs:
           ${{ (inputs.build_platform == 'ios' || inputs.build_platform == 'both') && '--ios' || '' }}
 
       - name: Commit overwrite version
-        if: inputs.overwrite_version != ''
+        if: inputs.overwrite_version != '' && inputs.upload_to != 'code_push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

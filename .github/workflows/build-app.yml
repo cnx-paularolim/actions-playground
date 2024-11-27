@@ -112,11 +112,11 @@ jobs:
 
       - name: Upload App to Google Play
         if: inputs.build_platform != 'ios' && (inputs.upload_to == 'store' || inputs.upload_to == 'store/github')
-        run: 'uploading to play store...'
+        run: echo 'uploading to play store...'
 
       - name: Upload Android artifact
         if: inputs.build_platform != 'ios' && (inputs.upload_to == 'github' || inputs.upload_to == 'store/github')
-        run: 'uploading to github...'
+        run: echo 'uploading to github...'
 
       - name: Check Xcode version
         if: runner.os == 'macOS'

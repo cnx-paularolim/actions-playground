@@ -98,7 +98,7 @@ jobs:
           git push
 
       - name: Change native version
-        run: echo 'changing native files (${{ inputs.env == 'hml' && '--hml' || '' }})...'
+        run: gulp setVersionsFromConfig ${{ inputs.env == 'hml' && '--hml' || '' }}
 
       - name: Set up our JDK environment
         if: inputs.build_platform != 'ios' && inputs.upload_to != 'code_push'

@@ -11,5 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "is-odd": "^3.0.1"
+  },
+  "devDependencies": {
+    "gulp": "^5.0.0"
   }
 }

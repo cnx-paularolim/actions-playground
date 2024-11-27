@@ -35,6 +35,10 @@ on:
         description: 'Enter the version to update via code push'
         required: false
         default: ''
+      overwrite_version:
+        description: 'Enter the version to overwrite (Android and iOS)'
+        required: false
+        default: ''
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -72,6 +76,10 @@ jobs:
       - name: Change to prod
         if: inputs.env == 'prod'
         run: echo 'changing to prod...'
+
+      - name: Overwrite version
+        if: inputs.overwrite_version != ''
+        run: gulp overwriteVersion --versionName ${{inputs.overwrite_version}}
 
       - name: Change native version
         run: echo 'changing native files (${{ inputs.env == 'hml' && '--hml' || '' }})...'

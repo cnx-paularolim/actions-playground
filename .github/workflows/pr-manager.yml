@@ -39,7 +39,7 @@ jobs:
         run: |
           git add test.txt
           git commit -m "chore: version ${{ inputs.branch_name }}"
-          git push version/${{ inputs.branch_name }}
+          git push origin version/${{ inputs.branch_name }}
 
       - name: Create pull request
         env: 

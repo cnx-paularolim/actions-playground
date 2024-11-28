@@ -1,0 +1,46 @@
+name: Create release/tag
+
+on:
+    pull_request:
+        types:
+          - closed
+
+jobs:
+  trigger-on-merge:
+    name: Trigger on merged pull request
+    runs-on: ubuntu-latest
+    if: >
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'version/')
+
+    steps:
+      - name: Checkout on branch ${{ github.ref_name }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Log Branch Info
+        run: |
+          echo "Merged branch: ${{ github.event.pull_request.head.ref }}"
+          echo "Target branch: ${{ github.event.pull_request.base.ref }}"
+
+      - name: Extract suffix from branch name
+        id: extract_suffix
+        run: |
+          # Extrai o nome completo da branch
+          branch_name=${{ github.ref_name }}
+          
+          # Remove o prefixo 'version/' e pega apenas o sufixo
+          suffix=${branch_name#version/}
+
+          # Salva o sufixo para uso posterior
+          echo "suffix=$suffix" >> $GITHUB_OUTPUT
+          echo "Extracted version: $suffix"
+
+      - name: Create Release
+        uses: elgohr/Github-Release-Action@v5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: ${{ steps.extract_suffix.outputs.suffix }}
+          tag: ${{ steps.extract_suffix.outputs.suffix }}

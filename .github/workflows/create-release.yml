@@ -28,7 +28,7 @@ jobs:
         id: extract_suffix
         run: |
           # Extrai o nome completo da branch
-          branch_name=${{ github.ref_name }}
+          branch_name=${{ github.event.pull_request.head.ref }}
           
           # Remove o prefixo 'version/' e pega apenas o sufixo
           suffix=${branch_name#version/}

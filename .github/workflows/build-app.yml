@@ -84,8 +84,8 @@ jobs:
         run: |
           gulp overwriteVersion \
           --versionOverwrite ${{ inputs.overwrite_version }} \
-          ${{ inputs.env == 'hml' && '--hml' || '' }} \
-          ${{ (inputs.build_platform == 'android' || inputs.build_platform == 'both') && '--android' || '' }} \
+          ${{ inputs.env == 'hml' && '--hml \' || '' }}
+          ${{ (inputs.build_platform == 'android' || inputs.build_platform == 'both') && '--android \' || '' }}
           ${{ (inputs.build_platform == 'ios' || inputs.build_platform == 'both') && '--ios' || '' }}
 
       - name: Change native version
@@ -236,7 +236,7 @@ jobs:
             --head version/${{ inputs.overwrite_version }} 2>&1)
 
       - name: Create Release
-        if: inputs.tag_version != '' && inputs.overwrite_version == ''
+        if: inputs.tag_version != ''
         uses: elgohr/Github-Release-Action@v5
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

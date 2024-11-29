@@ -84,8 +84,8 @@ jobs:
         run: |
           gulp overwriteVersion \
           --versionOverwrite ${{ inputs.overwrite_version }} \
-          ${{ inputs.env == 'hml' && '--hml \' || '' }}
-          ${{ (inputs.build_platform == 'android' || inputs.build_platform == 'both') && '--android \' || '' }}
+          ${{ inputs.env == 'hml' && '--hml' || '' }} \
+          ${{ (inputs.build_platform == 'android' || inputs.build_platform == 'both') && '--android' || '' }} \
           ${{ (inputs.build_platform == 'ios' || inputs.build_platform == 'both') && '--ios' || '' }}
 
       - name: Change native version

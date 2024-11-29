@@ -220,7 +220,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git git add ${{ inputs.env == 'hml' && './store/hml.json' || './store/prod.json' }}
+          git add ${{ inputs.env == 'hml' && './store/hml.json' || './store/prod.json' }}
           git commit -m "chore: version ${{ inputs.overwrite_version }}"
           git push origin version/${{ inputs.overwrite_version }}
 
@@ -229,11 +229,11 @@ jobs:
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pr_output=$(gh pr create \
+          gh pr create \
             --title "Version/${{ inputs.overwrite_version }}" \
             --body "This is an automated PR created by GitHub Actions." \
             --base ${{ github.ref_name }} \
-            --head version/${{ inputs.overwrite_version }} 2>&1)
+            --head version/${{ inputs.overwrite_version }}
 
       - name: Create Release
         if: inputs.tag_version != ''

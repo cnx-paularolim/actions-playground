@@ -12,9 +12,11 @@ runs:
   using: "composite"
   steps:
     - name: Create new branch
+      shell: bash
       run: git checkout -b version/${{ inputs.version }}
 
     - name: Commit changes and push
+      shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |
@@ -23,6 +25,7 @@ runs:
         git push origin version/${{ inputs.version }}
 
     - name: Create pull request
+      shell: bash
       env: 
         GITHUB_TOKEN: ${{ inputs.token }}
       run: |

@@ -1,0 +1,35 @@
+name: Manage pull request
+
+inputs:
+  token:
+    required: true
+  version:
+    required: true
+  env:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create new branch
+      run: git checkout -b version/${{ inputs.version }}
+
+    - name: Commit changes and push
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        git add ${{ inputs.env == 'hml' && './store/hml.json' || './store/prod.json' }}
+        git commit -m "chore: version ${{ inputs.version }}"
+        git push origin version/${{ inputs.version }}
+
+    - name: Create pull request
+      env: 
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        gh pr create \
+          --title "Version/${{ inputs.version }}" \
+          --body "This is an automated PR created by GitHub Actions." \
+          --base ${{ github.ref_name }} \
+          --head version/${{ inputs.version }}
+
+      

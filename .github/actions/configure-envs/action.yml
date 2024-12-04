@@ -13,8 +13,8 @@ runs:
       run: |
         touch .env
 
-        echo ENV_ONE='${{ secrets.ENV_ONE }}' > .env
-        echo ENV_TWO='${{ secrets.ENV_TWO }}' >> .env
+        echo ENV_ONE='VALUE_ONE' > .env
+        echo ENV_TWO='VALUE_TWO' >> .env
         
         echo Configured environment for ${{ inputs.env }}
 

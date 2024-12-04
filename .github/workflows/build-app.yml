@@ -71,11 +71,6 @@ jobs:
         with:
           env: ${{ inputs.env }}
 
-      - name: Display env
-        run: |
-          ls -a
-          cat .env
-
       - name: Install yarn dependencies
         run: yarn install --frozen-lockfile
 
@@ -218,29 +213,13 @@ jobs:
         if: always() && runner.os == 'macOS'
         run: echo 'cleaning...'
 
-      - name: Create new branch
+      - name: Manage pull request
         if: inputs.overwrite_version != '' && inputs.upload_to != 'code_push'
-        run: git checkout -b version/${{ inputs.overwrite_version }}
-
-      - name: Commit changes and push
-        if: inputs.overwrite_version != '' && inputs.upload_to != 'code_push'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git add ${{ inputs.env == 'hml' && './store/hml.json' || './store/prod.json' }}
-          git commit -m "chore: version ${{ inputs.overwrite_version }}"
-          git push origin version/${{ inputs.overwrite_version }}
-
-      - name: Create pull request
-        if: inputs.overwrite_version != '' && inputs.upload_to != 'code_push'
-        env: 
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr create \
-            --title "Version/${{ inputs.overwrite_version }}" \
-            --body "This is an automated PR created by GitHub Actions." \
-            --base ${{ github.ref_name }} \
-            --head version/${{ inputs.overwrite_version }}
+        uses: ./.github/actions/manage-pull-request
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ inputs.overwrite_version }}
+          env: ${{ inputs.env }}
 
       - name: Create Release
         if: inputs.tag_version != ''

@@ -67,7 +67,14 @@ jobs:
       - run: npm install gulp-cli -g
 
       - name: Configure envs
-        run: echo 'configuring env...'
+        uses: ./.github/actions/configure-envs
+        with:
+          env: ${{ inputs.env }}
+
+      - name: Display env
+        run: |
+          ls -a
+          cat .env
 
       - name: Install yarn dependencies
         run: yarn install --frozen-lockfile

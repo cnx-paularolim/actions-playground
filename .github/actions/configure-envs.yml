@@ -1,0 +1,21 @@
+name: Configure Envs
+description: Set environment variables based on secrets.
+inputs:
+  env:
+    description: Environment to configure (prod, hml)
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set environment variables
+      shell: bash
+      run: |
+        touch .env
+
+        echo ENV_ONE='VALUE_ONE' > .env
+        echo ENV_TWO='VALUE_TWO' >> .env
+        
+        echo Configured environment for ${{ inputs.env }}
+
+      
